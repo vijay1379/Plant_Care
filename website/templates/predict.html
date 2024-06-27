@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plantcare - Image Classifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <style>
+        .main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 3.5rem;
+        }
+        .classifier {
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+            background-color: var(--container-color);
+        }
+        .section__title-center {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .section__description {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .dropzone {
+            border: 2px dashed var(--first-color);
+            border-radius: 5px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        #dropzone {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+        }
+        #imagePreview img {
+            max-width: 100%;
+        }
+        .button {
+            display: inline-block;
+            background-color: var(--first-color);
+            color: #FFF;
+            padding: 1rem 1.75rem;
+            border-radius: .5rem;
+            font-weight: 500;
+            transition: .3s;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: var(--first-color-alt);
+        }
+        .button--flex {
+            display: inline-flex;
+            align-items: center;
+            column-gap: .5rem;
+        }
+        .button--outline {
+            background-color: transparent;
+            color: var(--first-color);
+            border: 1px solid var(--first-color);
+        }
+        .button--outline:hover {
+            background-color: var(--first-color);
+            color: #FFF;
+        }
+        .image-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        #resultContainer {
+    background-color: var(--container-color);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+    border: 3px solid var(--first-color); /* Add this line for the border */
+}
+
+#resultContainer.hidden {
+    display: none;
+}
+
+#resultContainer h2 {
+    color: var(--first-color);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+#resultContainer p {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+#predictedClass, #confidence {
+    font-weight: bold;
+    color: var(--first-color-alt);
+    font-size: 1.2rem;
+    display: block;
+    margin-top: 0.5rem;
+}
+
+#loadingText {
+    color: var(--first-color);
+    font-style: italic;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#resultContainer:not(.hidden) {
+    animation: fadeIn 0.5s ease-out;
+}
+/* Add these styles to your existing <style> tag or CSS file */
+
+    </style>
+</head>
+<body>
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">
+                <i class="ri-leaf-line nav__logo-icon"></i> Plantcare 
+            </a>
+
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item">
+                        <a href="#home" class="nav__link active-link">Home</a>
+                    </li>
+                </ul>
+                
+
+                <div class="nav__close" id="nav-close">
+                    <i class="ri-close-line"></i>
+                </div>
+            </div>
+
+
+
+            <div class="nav__btns">
+                <!-- Theme change button -->
+                <a href="/predict" class="button nav__button">Get Started</a>
+                <i class="ri-moon-line change-theme" id="theme-button"></i>
+                <div class="nav__toggle" id="nav-toggle">
+                    <i class="ri-menu-line"></i>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="main">
+        <section class="classifier" id="classifier">
+            <h2 class="section__title-center">Image Classifier</h2>
+            <p class="section__description">Select an Image for Classification</p>
+            <div class="dropzone" id="dropzone">
+                <i class="ri-image-add-line"></i>
+                <p>Drag and drop an image here, or <span style="color: var(--first-color);">click</span> to select an image</p>
+            </div>
+            <p id="loaded-image-text" class="hidden">Loaded image: <span id="loaded-image-name" style="color: var(--first-color);">None</span></p>
+            <div class="image-container" id="imageContainer">
+                
+            </div>
+            <div id="resultContainer" class="hidden">
+                <h2>Classification Result</h2>
+                <p id="loadingText" class="hidden">Analyzing image...</p>
+                <div id="resultContent" class="hidden">
+                    <p>Predicted Class: <span id="predictedClass"></span></p>
+                    <p>Confidence: <span id="confidence"></span></p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="button button--flex" id="sendImageBtn">
+                    <i class="ri-send-plane-fill"></i> SEND IMAGE
+                </button>
+                <button class="button button--flex button--outline" id="resetImageBtn">
+                    <i class="ri-refresh-line"></i> RESET IMAGE
+                </button>
+            </div>
+        </section>
+    </main>
+    <script>
+const imageContainer = document.getElementById('imageContainer');
+const dropzone = document.getElementById('dropzone');
+const loadedImageText = document.getElementById('loaded-image-text');
+const loadedImageName = document.getElementById('loaded-image-name');
+const sendImageBtn = document.getElementById('sendImageBtn');
+const resetImageBtn = document.getElementById('resetImageBtn');
+const resultContainer = document.getElementById('resultContainer');
+const predictedClassSpan = document.getElementById('predictedClass');
+const confidenceSpan = document.getElementById('confidence');
+const loadingText = document.getElementById('loadingText');
+let selectedFile = null;
+
+// Function to display the image and show file name
+function displayImage(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        imageContainer.innerHTML = `<img src="${e.target.result}" alt="Selected Image">`;
+        loadedImageName.textContent = file.name; // Show file name after image is loaded
+        loadedImageText.classList.remove('hidden'); // Show loaded image text
+        dropzone.classList.add('hidden'); // Hide dropzone after image is displayed
+    };
+    reader.readAsDataURL(file);
+}
+
+dropzone.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+        selectedFile = e.target.files[0];
+        displayImage(selectedFile);
+    };
+    input.click();
+});
+
+dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.style.borderColor = 'var(--first-color-alt)';
+});
+
+dropzone.addEventListener('dragleave', () => {
+    dropzone.style.borderColor = 'var(--first-color)';
+});
+
+dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.style.borderColor = 'var(--first-color)';
+    selectedFile = e.dataTransfer.files[0];
+    displayImage(selectedFile);
+});
+
+sendImageBtn.addEventListener('click', async () => {
+    if (selectedFile) {
+        // Show loading indicator
+        resultContainer.classList.add('hidden');
+        loadingText.classList.remove('hidden');
+        document.getElementById('resultContent').classList.add('hidden');
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            const { filename } = data;
+
+            if (filename) {
+                const classifyResponse = await fetch('/classify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ filename })
+                });
+
+                const classifyData = await classifyResponse.json();
+                const { predicted_class, confidence } = classifyData;
+
+                // Update UI with classification result
+                predictedClassSpan.textContent = predicted_class;
+                confidenceSpan.textContent = confidence.toFixed(3);
+
+                // Show result container
+                resultContainer.classList.remove('hidden');
+                loadingText.classList.add('hidden');
+                loadingText.classList.add('hidden');
+                document.getElementById('resultContent').classList.remove('hidden');
+            } else {
+                alert('Error uploading file. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error classifying image:', error);
+            alert('Error classifying image. Please try again.');
+            resultContainer.classList.add('hidden');
+        }
+    } else {
+        alert('Please select an image first.');
+    }
+});
+
+resetImageBtn.addEventListener('click', () => {
+    selectedFile = null;
+    loadedImageName.textContent = 'None';
+    loadedImageText.classList.add('hidden'); // Hide loaded image text on reset
+    imageContainer.innerHTML = ''; // Clear displayed image
+    resultContainer.classList.add('hidden');
+    dropzone.classList.remove('hidden'); 
+    loadingText.classList.add('hidden');
+    document.getElementById('resultContent').classList.add('hidden');
+    // Ensure dropzone is visible on reset
+});
+ </script>
+
+<script src="../static/js/main.js"></script>
+<a href="#" class="scrollup" id="scroll-up"> 
+            <i class="ri-arrow-up-fill scrollup__icon"></i>
+</a>
+<script src="../static/js/scrollreveal.min.js"></script>
+       
+</body>
+</html>
