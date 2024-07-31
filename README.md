@@ -16,20 +16,20 @@ This project focuses on predicting three types of mulberry leaf diseases: Health
 1. Clone the repository
    ```sh
    git clone https://github.com/your_username/plant-care.git
-```
+   ```
 2. Navigate to the project directory
    ```sh
    cd plant-care/website
-```
+   ```
 3. Install the required dependencies
-      ```sh
+   ```sh
    pip install -r requirements.txt
-``
+   ```
 
 ## Usage
-      ```sh
+   ```sh
    python app.py
-``
+   ```
 ## Project Structure
 * models/: Contains saved model files.
 * notebooks/: Contains Jupyter notebooks for different models and experiments.
