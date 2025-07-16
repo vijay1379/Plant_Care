@@ -1,13 +1,10 @@
 import os
 from flask import Flask, request, jsonify, render_template, send_from_directory
 import requests
-from ultralytics import YOLO
 import tempfile
-import cv2
 
 app = Flask(__name__)
 FASTAPI_URL = "https://chris2002-ml-app.hf.space/predict"
-model = YOLO("yolo_test.pt") 
 
 @app.route('/')
 def index():
@@ -33,23 +30,6 @@ def classify():
             file.save(temp_file.name)
             temp_file_path = temp_file.name
 
-        # ✅ Run YOLO prediction
-        results = model.predict(source=temp_file_path, conf=0.4, verbose=False)
-        boxes = results[0].boxes
-
-        # ✅ Check if any detection is "mulberry_leaf" (class 0)
-        mulberry_detected = False
-        if boxes is not None and len(boxes) > 0:
-            for box in boxes:
-                cls_id = int(box.cls[0])
-                if cls_id == 0:  # Assuming class 0 is 'mulberry_leaf'
-                    mulberry_detected = True
-                    break
-
-        if not mulberry_detected:
-            os.remove(temp_file_path)
-            return jsonify({"error": "Upload only mulberry leaf!"}), 400
-
         # ✅ Forward image to external FastAPI service
         with open(temp_file_path, 'rb') as f:
             files = {'file': (file.filename, f, file.content_type)}
@@ -57,14 +37,23 @@ def classify():
 
         os.remove(temp_file_path)
 
+        print("FastAPI status:", response.status_code)
+        print("FastAPI response:", response.text)
+
         if response.status_code == 200:
             result = response.json()
+            if "error" in result:
+                return jsonify({"error": result["error"]}), 400
             return jsonify({
                 "predicted_class": result.get("predicted_class", "Unknown"),
                 "confidence": result.get("confidence", "N/A")
             }), 200
         else:
-            return jsonify({"error": "FastAPI prediction failed"}), response.status_code
+            try:
+                error_msg = response.json().get("error", "FastAPI prediction failed")
+            except Exception:
+                error_msg = "FastAPI prediction failed"
+            return jsonify({"error": error_msg}), response.status_code
 
     except Exception as e:
         return jsonify({"error": f"Internal error: {str(e)}"}), 500
