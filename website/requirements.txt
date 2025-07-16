@@ -1,4 +1,0 @@
-Flask
-Pillow
-numpy
-requests
