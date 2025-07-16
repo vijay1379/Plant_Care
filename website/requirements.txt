@@ -2,3 +2,4 @@ Flask
 Pillow
 numpy
 requests
+ultralytics
