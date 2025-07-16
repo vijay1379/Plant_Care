@@ -47,3 +47,12 @@ This project focuses on predicting three types of mulberry leaf diseases: Health
 ![image](https://github.com/user-attachments/assets/40f2e5e4-561a-4d03-9130-1e639b0fc05a)
 ### Prediction Page
 ![image](https://github.com/user-attachments/assets/a8f0420d-3b39-4325-9827-bca826beda95)
+
+### Result Page
+<img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/b0fc3652-2cdb-4130-acae-3f3ccab73321" />
+
+## Video
+
+
+https://github.com/user-attachments/assets/d760166d-3c89-4145-9039-0d2caa44dbbf
+
